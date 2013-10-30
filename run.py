@@ -10,7 +10,7 @@ import os
 import sys
 
 os.chdir(os.path.join(
-    os.path.dirname(__file__),
+    os.path.dirname(os.path.abspath(__file__)),
     '..'))
 
 ZOOKEEPER_CONFIG_FILE = 'conf/zoo.cfg'
