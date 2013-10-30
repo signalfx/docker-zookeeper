@@ -25,12 +25,12 @@ seed the service's configuration:
     placed in the `$ZOOKEEPER_CONFIG_DATA_DIR/myid` file and the definition of
     the other nodes of the cluster are expected in the
     `ZOOKEEPER_CONFIG_NODE_LIST` environment variable (see below);
-  - `ZOOKEEPER_NODE_LIST` is a comma-separated list of `host:port`
-    definitions that define, in order, *all* the nodes of the ZooKeeper
-    cluster. This information is translated into `server.X=` entries in the
-    configuration file. Make sure the node ID used for the instance you start
-    matches the hostname (and port) of that corresponding entry in the node
-    list.
+  - `ZOOKEEPER_NODE_LIST` is a comma-separated list of
+    `host:client_port:peer_port:leader_election_port` definitions that define,
+    in order, *all* the nodes of the ZooKeeper cluster. This information is
+    translated into `server.X=` entries in the configuration file. Make sure
+    the configuration of the node you are starting matches the hostname (and
+    ports) of its corresponding entry in the node list.
 
 Usage
 -----
