@@ -2,9 +2,9 @@ ZooKeeper on Docker
 ===================
 
 This `Dockerfile` creates a Docker image that can be used as the base for
-running ZooKeeper within a Docker container. The ZooKeeper service is ran by
-the run.sh script which is in charge of setting up the ZooKeeper configuration
-from environment variables passed to the container when it is run.
+running ZooKeeper within a Docker container. The run script is responsible for
+creating the ZooKeeper configuration based on the container's environment and
+starting the ZooKeeper service.
 
 The version of ZooKeeper is defined in the `Dockerfile` and generally points to
 the latest stable release of ZooKeeper.
@@ -41,7 +41,7 @@ To build a new image, simply run from this directory:
 $ docker build -t `whoami`/zookeeper:3.4.5 .
 ```
 
-The Docker image will be built and now available in Docker to start a new
+The Docker image will be built and now available for Docker to start a new
 container from:
 
 ```
