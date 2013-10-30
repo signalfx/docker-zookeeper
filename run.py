@@ -58,7 +58,7 @@ if ZOOKEEPER_CONFIG_NODE_ID:
     if ZOOKEEPER_CONFIG_CLIENT_PORT != node['client_port'] or \
             ZOOKEEPER_CONFIG_PEER_PORT != node['peer_port'] or \
             ZOOKEEPER_CONFIG_LEADER_ELECTION_PORT != node['leader_election_port']:
-        sys.stderr.write('Mismatched ports with node list for node %d!\n',
+        sys.stderr.write('Mismatched ports with node list for node %d!\n' %
             ZOOKEEPER_CONFIG_NODE_ID)
         sys.exit(1)
 
@@ -69,15 +69,22 @@ with open(ZOOKEEPER_CONFIG_FILE, 'w+') as conf:
         'syncLimit=5',
         'dataDir=%s' % ZOOKEEPER_CONFIG_DATA_DIR,
         'clientPort=%d' % ZOOKEEPER_CONFIG_CLIENT_PORT]))
+    conf.write('\n')
 
-    if ZOOKEEPER_CONFIG_NODE_ID:
-        conf.write('\n# ZooKeeper cluster nodes\n')
-        for node in ZOOKEEPER_NODES:
-            conf.write('server.%(id)d=%(host)s:%(peer_port)d:%(leader_election_port)d\n' % node)
-        print 'Configured node #%d of a %d-node ZooKeeper cluster.' % \
-                (ZOOKEEPER_CONFIG_NODE_ID, len(ZOOKEEPER_NODES))
-    else:
-        print 'Configured single-node ZooKeeper instance.'
+    for node in ZOOKEEPER_NODES:
+        conf.write('server.%(id)d=%(host)s:%(peer_port)d:%(leader_election_port)d\n' % node)
+
+# When a node ID is specified, we're running in multi-node cluster mode and we
+# also need to generate the 'myid' file.
+if ZOOKEEPER_CONFIG_NODE_ID:
+    if not os.path.exists(ZOOKEEPER_CONFIG_DATA_DIR):
+        os.makedirs(ZOOKEEPER_CONFIG_DATA_DIR, mode=0750)
+    with open(os.path.join(ZOOKEEPER_CONFIG_DATA_DIR, 'myid'), 'w+') as myid:
+        myid.write('%s\n' % ZOOKEEPER_CONFIG_NODE_ID)
+    print 'Configured node #%d of a %d-node ZooKeeper cluster.' % \
+            (ZOOKEEPER_CONFIG_NODE_ID, len(ZOOKEEPER_NODES))
+else:
+    print 'Configured single-node ZooKeeper instance.'
 
 # Start ZooKeeper
 os.execl('bin/zkServer.sh', 'zookeeper', 'start-foreground')
