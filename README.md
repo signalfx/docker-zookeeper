@@ -15,22 +15,31 @@ Environment variables
 The following environment variables are understood by the startup script to
 seed the service's configuration:
 
-  - `ZOOKEEPER_CONFIG_DATA_DIR`, which controls the `dataDir` configuration
-    setting. Defaults to `/var/lib/zookeeper`;
-  - `ZOOKEEPER_CONFIG_CLIENT_PORT`, which controls the `clientPort`
+  - `CONTAINER_NAME` should contain the logical name of the container,
+    which will be used for looking up links and ports informations from the
+    other environment variables. For this, the name is uppercased and
+    non-alphanumeric characters are replaced by underscores.
+  - `ZOOKEEPER_<NAME>_CLIENT_PORT`, which controls the `clientPort`
     configuration setting. Defaults to 2181;
-  - `ZOOKEEPER_CONFIG_NODE_ID`, which, when set, determines the node ID in the
-    ZooKeeper cluster of this instance. If left empty, the instance assumes it
-    is running in single-node mode. Setting this means the node ID will be
-    placed in the `$ZOOKEEPER_CONFIG_DATA_DIR/myid` file and the definition of
-    the other nodes of the cluster are expected in the
-    `ZOOKEEPER_CONFIG_NODE_LIST` environment variable (see below);
-  - `ZOOKEEPER_NODE_LIST` is a comma-separated list of
-    `host:client_port:peer_port:leader_election_port` definitions that define,
-    in order, *all* the nodes of the ZooKeeper cluster. This information is
-    translated into `server.X=` entries in the configuration file. Make sure
-    the configuration of the node you are starting matches the hostname (and
-    ports) of its corresponding entry in the node list.
+  - `ZOOKEEPER_<NAME>_PEER_PORT`, which is used as the peer port specified in
+    the server list for this node (and the others). Defaults to 2888;
+  - `ZOOKEEPER_<NAME>_LEADER_ELECTION_PORT`, which is used as the leader
+    election port specified in the server list for this node (and the others).
+    Defaults to 3888.
+
+The ZooKeeper node ID, written out to the `/var/lib/zookeeper/myid` file, is
+infered from the position of this container's name in the list of all ZooKeeper
+nodes defined in the environment variables. Because these variables are always
+looked at in sorted order, this is deterministic as long as all ZooKeeper node
+containers start with the same set of `ZOOKEEPER_*` environment variables.
+
+Volumes
+-------
+
+The ZooKeeper images uses the following volumes that you may want to bind from
+the container's host:
+
+  - `/var/lib/zookeeper`, for the ZooKeeper data snapshots.
 
 Usage
 -----

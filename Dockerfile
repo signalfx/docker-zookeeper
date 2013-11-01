@@ -11,4 +11,5 @@ RUN wget -q -O - http://apache.mesi.com.ar/zookeeper/zookeeper-3.4.5/zookeeper-3
 ADD run.py /opt/zookeeper-3.4.5/.docker/
 
 WORKDIR /opt/zookeeper-3.4.5/
+VOLUME /var/lib/zookeeper
 CMD ["python", "/opt/zookeeper-3.4.5/.docker/run.py"]
