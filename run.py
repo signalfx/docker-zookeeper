@@ -17,18 +17,19 @@ os.chdir(os.path.join(
     '..'))
 
 ZOOKEEPER_CONFIG_FILE = 'conf/zoo.cfg'
-ZOOKEEPER_CONFIG_DATA_DIR = '/var/lib/zookeeper'
-ZOOKEEPER_NODE_ID = None
 
 # Get container/instance name.
 CONTAINER_NAME = os.environ.get('CONTAINER_NAME', '')
 assert CONTAINER_NAME, 'Container name is missing!'
-ZOOKEEPER_CONFIG_BASE = re.sub(r'[^\w]', '_', CONTAINER_NAME).upper()
+CONFIG_BASE = re.sub(r'[^\w]', '_', CONTAINER_NAME).upper()
+
+ZOOKEEPER_DATA_DIR = '/var/lib/zookeeper'
+ZOOKEEPER_NODE_ID = None
 
 # Gather configuration settings from environment.
-ZOOKEEPER_CONFIG_CLIENT_PORT = int(os.environ.get('ZOOKEEPER_%s_CLIENT_PORT' % ZOOKEEPER_CONFIG_BASE, 2181))
-ZOOKEEPER_CONFIG_PEER_PORT = int(os.environ.get('ZOOKEEPER_%s_PEER_PORT' % ZOOKEEPER_CONFIG_BASE, 2888))
-ZOOKEEPER_CONFIG_LEADER_ELECTION_PORT = int(os.environ.get('ZOOKEEPER_%s_LEADER_ELECTION_PORT' % ZOOKEEPER_CONFIG_BASE, 3888))
+ZOOKEEPER_CLIENT_PORT = int(os.environ.get('ZOOKEEPER_{}_CLIENT_PORT'.format(CONFIG_BASE), 2181))
+ZOOKEEPER_PEER_PORT = int(os.environ.get('ZOOKEEPER_{}_PEER_PORT'.format(CONFIG_BASE), 2888))
+ZOOKEEPER_LEADER_ELECTION_PORT = int(os.environ.get('ZOOKEEPER_{}_LEADER_ELECTION_PORT'.format(CONFIG_BASE), 3888))
 
 # Write out the ZooKeeper configuration file.
 with open(ZOOKEEPER_CONFIG_FILE, 'w+') as conf:
@@ -40,8 +41,8 @@ dataDir=%(data_dir)s
 clientPort=%(client_port)d
 """ % {
     'node_name': CONTAINER_NAME,
-    'data_dir': ZOOKEEPER_CONFIG_DATA_DIR,
-    'client_port': ZOOKEEPER_CONFIG_CLIENT_PORT,
+    'data_dir': ZOOKEEPER_DATA_DIR,
+    'client_port': ZOOKEEPER_CLIENT_PORT,
     })
 
     def extract_zk_node_name(s):
@@ -56,15 +57,15 @@ clientPort=%(client_port)d
             os.environ['ZOOKEEPER_%s_HOST' % name],
             int(os.environ['ZOOKEEPER_%s_PEER_PORT' % name]),
             int(os.environ['ZOOKEEPER_%s_LEADER_ELECTION_PORT' % name])))
-        if ZOOKEEPER_CONFIG_BASE == name:
+        if CONFIG_BASE == name:
             ZOOKEEPER_NODE_ID = id
 
 # Write out the 'myid' file in the data directory if we found ourselves in the
 # node list.
 if ZOOKEEPER_NODE_ID:
-    if not os.path.exists(ZOOKEEPER_CONFIG_DATA_DIR):
-        os.makedirs(ZOOKEEPER_CONFIG_DATA_DIR, mode=0750)
-    with open(os.path.join(ZOOKEEPER_CONFIG_DATA_DIR, 'myid'), 'w+') as f:
+    if not os.path.exists(ZOOKEEPER_DATA_DIR):
+        os.makedirs(ZOOKEEPER_DATA_DIR, mode=0750)
+    with open(os.path.join(ZOOKEEPER_DATA_DIR, 'myid'), 'w+') as f:
         f.write('%s\n' % ZOOKEEPER_NODE_ID)
 
 # Start ZooKeeper
