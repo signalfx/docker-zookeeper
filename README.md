@@ -15,23 +15,27 @@ Environment variables
 The following environment variables are understood by the startup script to
 seed the service's configuration:
 
+  - `SERVICE_NAME` should contain the logical name of the service this
+    container is an instance of;
   - `CONTAINER_NAME` should contain the logical name of the container,
     which will be used for looking up links and ports informations from the
     other environment variables. For this, the name is uppercased and
     non-alphanumeric characters are replaced by underscores.
-  - `ZOOKEEPER_<NAME>_CLIENT_PORT`, which controls the `clientPort`
-    configuration setting. Defaults to 2181;
-  - `ZOOKEEPER_<NAME>_PEER_PORT`, which is used as the peer port specified in
-    the server list for this node (and the others). Defaults to 2888;
-  - `ZOOKEEPER_<NAME>_LEADER_ELECTION_PORT`, which is used as the leader
-    election port specified in the server list for this node (and the others).
-    Defaults to 3888.
+  - `<SERVICE_NAME>_<CONTAINER_NAME>_CLIENT_PORT`, which controls the
+    `clientPort` configuration setting. Defaults to 2181;
+  - `<SERVICE_NAME>_<CONTAINER_NAME>_PEER_PORT`, which is used as the
+    peer port specified in the server list for this node (and the
+    others). Defaults to 2888;
+  - `<SERVICE_NAME>_<CONTAINER_NAME>_LEADER_ELECTION_PORT`, which is
+    used as the leader election port specified in the server list for
+    this node (and the others).  Defaults to 3888.
 
 The ZooKeeper node ID, written out to the `/var/lib/zookeeper/myid` file, is
 infered from the position of this container's name in the list of all ZooKeeper
 nodes defined in the environment variables. Because these variables are always
 looked at in sorted order, this is deterministic as long as all ZooKeeper node
-containers start with the same set of `ZOOKEEPER_*` environment variables.
+containers start with the same set of `<SERVICE_NAME>_*` environment
+variables.
 
 Volumes
 -------
