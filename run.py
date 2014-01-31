@@ -7,10 +7,9 @@
 # use of some "internal" Maestro guest helper functions here.
 
 import os
-import re
-import sys
 
 from maestro.guestutils import *
+from maestro.extensions.logging.logstash import run_service
 
 os.chdir(os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
@@ -65,5 +64,16 @@ else:
     print 'Starting {} as a single-node ZooKeeper cluster...'.format(
             get_container_name())
 
+os.environ['JVMFLAGS'] = ' '.join([
+    '-server',
+    '-showversion',
+    '-javaagent:lib/jmxagent.jar',
+    '-Dsf.jmxagent.port={}'.format(get_port('jmx', -1)),
+    '-Djava.rmi.server.hostname={}'.format(get_container_host_address()),
+    os.environ.get('JVM_OPTS', ''),
+])
+
 # Start ZooKeeper
-os.execl('bin/zkServer.sh', 'zookeeper', 'start-foreground')
+run_service(['bin/zkServer.sh', 'start-foreground'],
+        logbase='/var/log/zookeeper',
+        logtarget='logstash')

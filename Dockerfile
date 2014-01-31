@@ -1,20 +1,16 @@
 # Dockerfile for ZooKeeper
 
-FROM mpetazzoni/maestro-base
-
+FROM quay.io/signalfuse/maestro-base:0.1.6
 MAINTAINER Maxime Petazzoni <max@signalfuse.com>
 
-# Install Maestro for guest utils
-RUN apt-get update
-RUN apt-get -y install python python-setuptools
-RUN easy_install http://github.com/signalfuse/maestro-ng/archive/maestro-0.1.4.zip
-
 # Get latest stable release of ZooKeeper
-RUN wget -q -O - http://apache.mesi.com.ar/zookeeper/zookeeper-3.4.5/zookeeper-3.4.5.tar.gz \
+RUN wget -q -O - http://mirrors.sonic.net/apache/zookeeper/zookeeper-3.4.5/zookeeper-3.4.5.tar.gz \
   | tar -C /opt -xz
 
+ADD jmxagent.jar /opt/zookeeper-3.4.5/lib/
 ADD run.py /opt/zookeeper-3.4.5/.docker/
 
 WORKDIR /opt/zookeeper-3.4.5/
 VOLUME /var/lib/zookeeper
+VOLUME /var/log/zookeeper
 CMD ["python", "/opt/zookeeper-3.4.5/.docker/run.py"]
