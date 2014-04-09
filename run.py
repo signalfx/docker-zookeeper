@@ -70,6 +70,7 @@ os.environ['JVMFLAGS'] = ' '.join([
     '-javaagent:lib/jmxagent.jar',
     '-Dsf.jmxagent.port={}'.format(get_port('jmx', -1)),
     '-Djava.rmi.server.hostname={}'.format(get_container_host_address()),
+    '-Dvisualvm.display.name="{}/{}"'.format(get_environment_name(), get_container_name()),
     os.environ.get('JVM_OPTS', ''),
 ])
 
