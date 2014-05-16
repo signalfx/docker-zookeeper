@@ -9,14 +9,17 @@
 import os
 
 from maestro.guestutils import *
-from maestro.extensions.logging.logstash import run_service
 
 os.chdir(os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     '..'))
 
+ZOOKEEPER_CONFIG_FILE = os.path.join('conf', 'zoo.cfg')
+ZOOKEEPER_LOG_CONFIG_FILE = os.path.join('conf', 'log4j.properties')
 ZOOKEEPER_DATA_DIR = '/var/lib/zookeeper'
 ZOOKEEPER_NODE_ID = None
+
+LOG_PATTERN = "%d{yyyy'-'MM'-'dd'T'HH:mm:ss.SSS} %-5p [%-35.35t] [%-36.36c]: %m%n"
 
 # First, gather ZooKeeper nodes from the environment.
 ZOOKEEPER_NODE_LIST = get_node_list(get_service_name(),
@@ -45,9 +48,22 @@ for id, node in enumerate(ZOOKEEPER_NODE_LIST, 1):
         ZOOKEEPER_NODE_ID = id
 
 # Write out the ZooKeeper configuration file.
-with open(os.path.join('conf', 'zoo.cfg'), 'w+') as f:
+with open(ZOOKEEPER_CONFIG_FILE, 'w+') as f:
     for entry in conf.iteritems():
         f.write("%s=%s\n" % entry)
+
+# Setup the logging configuration.
+with open(ZOOKEEPER_LOG_CONFIG_FILE, 'w+') as f:
+    f.write("""# Log4j configuration, logs to rotating file
+log4j.rootLogger=INFO,R
+
+log4j.appender.R=org.apache.log4j.RollingFileAppender
+log4j.appender.R.File=/var/log/%s/%s.log
+log4j.appender.R.maxFileSize=100MB
+log4j.appender.R.maxBackupIndex=10
+log4j.appender.R.layout=org.apache.log4j.PatternLayout
+log4j.appender.R.layout.ConversionPattern=%s
+""" % (get_service_name(), get_container_name(), LOG_PATTERN))
 
 # Write out the 'myid' file in the data directory if we found ourselves in the
 # node list.
@@ -75,6 +91,4 @@ os.environ['JVMFLAGS'] = ' '.join([
 ])
 
 # Start ZooKeeper
-run_service(['bin/zkServer.sh', 'start-foreground'],
-        logbase='/var/log/zookeeper',
-        logtarget='logstash')
+os.execl('bin/zkServer.sh', 'zookeeper', 'start-foreground')

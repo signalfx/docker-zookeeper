@@ -1,6 +1,6 @@
 # Dockerfile for ZooKeeper
 
-FROM quay.io/signalfuse/maestro-base:0.1.6
+FROM quay.io/signalfuse/maestro-base:0.1.7.1
 MAINTAINER Maxime Petazzoni <max@signalfuse.com>
 
 # Get latest stable release of ZooKeeper
