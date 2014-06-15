@@ -1,0 +1,22 @@
+# This is an example of a Maestro environment description file. It starts up a
+# single ZooKeeper node to serve a multi-node Kafka broker cluster than
+# can be used for pub/sub and messaging.
+
+name: demo
+
+ships:
+  # docker_port remains at default 4243 on all our hosts
+  vm1: {ip: 127.0.0.1, docker_port: 2375 }
+
+services:
+  # 1-node ZooKeeper cluster.
+  zookeeper:
+    image: maestro_ng/zookeeper:3.4.5
+    instances:
+      zk-node-1:
+        ship: vm1
+        ports: {client: 2181, peer: 2888, leader_election: 3888}
+        lifecycle:
+          running: [{type: tcp, port: client, max_wait: 10}]
+        volumes:
+          /var/lib/zookeeper: /home/vagrant/data/zookeeper

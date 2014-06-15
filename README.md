@@ -51,7 +51,7 @@ Usage
 To build a new image, simply run from this directory:
 
 ```
-$ docker build -t `whoami`/zookeeper:3.4.5 .
+$ docker build -t maestro_ng/zookeeper:3.4.5 .
 ```
 
 The Docker image will be built and now available for Docker to start a new
@@ -59,5 +59,15 @@ container from:
 
 ```
 $ docker images | grep zookeeper
-mpetazzoni/zookeeper   3.4.5              294bef30310b        2 days ago          12.29 kB (virtual 856.7 MB)
+maestro_ng/zookeeper   3.4.5              294bef30310b        2 days ago          12.29 kB (virtual 856.7 MB)
+```
+
+Once built, this image is intended for use via 
+[maestro-ng orchestration](https://github.com/signalfuse/maestro-ng).  For
+example:
+
+```
+$ cd ./maestro-examples/single-node/ && python -m maestro start
+  #  INSTANCE             SERVICE         SHIP                 CONTAINER       STATUS
+  1. zk-node-1            zookeeper       vm1                  1d050d0         started
 ```
