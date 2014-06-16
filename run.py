@@ -19,7 +19,7 @@ ZOOKEEPER_LOG_CONFIG_FILE = os.path.join('conf', 'log4j.properties')
 ZOOKEEPER_DATA_DIR = '/var/lib/zookeeper'
 ZOOKEEPER_NODE_ID = None
 
-LOG_PATTERN = "%d{yyyy'-'MM'-'dd'T'HH:mm:ss.SSS} %-5p [%-35.35t] [%-36.36c]: %m%n"
+LOG_PATTERN = "%d{yyyy'-'MM'-'dd'T'HH:mm:ss.SSSXXX} %-5p [%-35.35t] [%-36.36c]: %m%n"
 
 # First, gather ZooKeeper nodes from the environment.
 ZOOKEEPER_NODE_LIST = get_node_list(get_service_name(),
