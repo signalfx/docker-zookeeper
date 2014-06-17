@@ -6,9 +6,14 @@
 # Because of the nature of the bootstrapping of the ZooKeeper cluster, we make
 # use of some "internal" Maestro guest helper functions here.
 
+from __future__ import print_function
+
 import os
 
-from maestro.guestutils import *
+from maestro.guestutils import (
+    get_container_name, get_node_list, get_service_name, get_port,
+    get_specific_host, get_specific_port, get_container_host_address,
+    get_environment_name)
 
 os.chdir(os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
@@ -19,7 +24,8 @@ ZOOKEEPER_LOG_CONFIG_FILE = os.path.join('conf', 'log4j.properties')
 ZOOKEEPER_DATA_DIR = '/var/lib/zookeeper'
 ZOOKEEPER_NODE_ID = None
 
-LOG_PATTERN = "%d{yyyy'-'MM'-'dd'T'HH:mm:ss.SSSXXX} %-5p [%-35.35t] [%-36.36c]: %m%n"
+LOG_PATTERN = (
+    "%d{yyyy'-'MM'-'dd'T'HH:mm:ss.SSSXXX} %-5p [%-35.35t] [%-36.36c]: %m%n")
 
 # First, gather ZooKeeper nodes from the environment.
 ZOOKEEPER_NODE_LIST = get_node_list(get_service_name(),
@@ -27,9 +33,10 @@ ZOOKEEPER_NODE_LIST = get_node_list(get_service_name(),
 
 # Build a representation of ourselves, to match against the node list.
 myself = '{}:{}:{}'.format(
-        get_specific_host(get_service_name(), get_container_name()),
-        get_specific_port(get_service_name(), get_container_name(), 'peer'),
-        get_specific_port(get_service_name(), get_container_name(), 'leader_election'))
+    get_specific_host(get_service_name(), get_container_name()),
+    get_specific_port(get_service_name(), get_container_name(), 'peer'),
+    get_specific_port(get_service_name(), get_container_name(),
+                      'leader_election'))
 
 # Build the ZooKeeper node configuration.
 conf = {
@@ -72,13 +79,13 @@ if ZOOKEEPER_NODE_ID:
         os.makedirs(ZOOKEEPER_DATA_DIR, mode=0750)
     with open(os.path.join(ZOOKEEPER_DATA_DIR, 'myid'), 'w+') as f:
         f.write('%s\n' % ZOOKEEPER_NODE_ID)
-    print 'Starting {}, node {} of a {}-node ZooKeeper cluster...'.format(
-            get_container_name(),
-            ZOOKEEPER_NODE_ID,
-            len(ZOOKEEPER_NODE_LIST))
+    print('Starting {}, node {} of a {}-node ZooKeeper cluster...'.format(
+        get_container_name(),
+        ZOOKEEPER_NODE_ID,
+        len(ZOOKEEPER_NODE_LIST)))
 else:
-    print 'Starting {} as a single-node ZooKeeper cluster...'.format(
-            get_container_name())
+    print('Starting {} as a single-node ZooKeeper cluster...'.format(
+        get_container_name()))
 
 os.environ['JVMFLAGS'] = ' '.join([
     '-server',
@@ -86,7 +93,8 @@ os.environ['JVMFLAGS'] = ' '.join([
     '-javaagent:lib/jmxagent.jar',
     '-Dsf.jmxagent.port={}'.format(get_port('jmx', -1)),
     '-Djava.rmi.server.hostname={}'.format(get_container_host_address()),
-    '-Dvisualvm.display.name="{}/{}"'.format(get_environment_name(), get_container_name()),
+    '-Dvisualvm.display.name="{}/{}"'.format(
+        get_environment_name(), get_container_name()),
     os.environ.get('JVM_OPTS', ''),
 ])
 
