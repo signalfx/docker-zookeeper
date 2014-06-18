@@ -87,16 +87,25 @@ else:
     print('Starting {} as a single-node ZooKeeper cluster...'.format(
         get_container_name()))
 
-os.environ['JVMFLAGS'] = ' '.join([
+jvmflags = [
     '-server',
     '-showversion',
-    '-javaagent:lib/jmxagent.jar',
-    '-Dsf.jmxagent.port={}'.format(get_port('jmx', -1)),
-    '-Djava.rmi.server.hostname={}'.format(get_container_host_address()),
     '-Dvisualvm.display.name="{}/{}"'.format(
         get_environment_name(), get_container_name()),
-    os.environ.get('JVM_OPTS', ''),
-])
+]
+
+jmx_port = get_port('jmx', -1)
+if jmx_port != -1:
+    jvmflags += [
+        '-Djava.rmi.server.hostname={}'.format(get_container_host_address()),
+        '-Dcom.sun.management.jmxremote.port={}'.format(jmx_port),
+        '-Dcom.sun.management.jmxremote.rmi.port={}'.format(jmx_port),
+        '-Dcom.sun.management.jmxremote.authenticate=false',
+        '-Dcom.sun.management.jmxremote.local.only=false',
+        '-Dcom.sun.management.jmxremote.ssl=false',
+    ]
+
+os.environ['JVMFLAGS'] = ' '.join(jvmflags) + os.environ.get('JVM_OPTS', '')
 
 # Start ZooKeeper
 os.execl('bin/zkServer.sh', 'zookeeper', 'start-foreground')
