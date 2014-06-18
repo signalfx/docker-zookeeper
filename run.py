@@ -9,6 +9,7 @@
 from __future__ import print_function
 
 import os
+import sys
 
 from maestro.guestutils import (
     get_container_name, get_node_list, get_service_name, get_port,
@@ -87,16 +88,24 @@ else:
     print('Starting {} as a single-node ZooKeeper cluster...'.format(
         get_container_name()))
 
-os.environ['JVMFLAGS'] = ' '.join([
-    '-server',
-    '-showversion',
-    '-javaagent:lib/jmxagent.jar',
-    '-Dsf.jmxagent.port={}'.format(get_port('jmx', -1)),
-    '-Djava.rmi.server.hostname={}'.format(get_container_host_address()),
-    '-Dvisualvm.display.name="{}/{}"'.format(
-        get_environment_name(), get_container_name()),
-    os.environ.get('JVM_OPTS', ''),
-])
+jvm_flags = ['-server', '-showversion']
+jmx_port = get_port('jmx', -1)
+if jmx_port != -1:
+    jvm_flags.extend([
+        '-Djava.rmi.server.hostname={}'.format(get_container_host_address()),
+        '-Dcom.sun.management.jmxremote.port={}'.format(jmx_port),
+        '-Dcom.sun.management.jmxremote.rmi.port={}'.format(jmx_port),
+        '-Dcom.sun.management.jmxremote.local.only=false',
+        '-Dcom.sun.management.jmxremote.authenticate=false',
+        '-Dcom.sun.management.jmxremote.ssl=false',
+    ])
+
+jvm_flags.append('-Dvisualvm.display.name="{}/{}"'.format(
+    get_environment_name(), get_container_name()))
+
+os.environ['JVMFLAGS'] = ' '.join(jvm_flags) + os.environ.get('JVM_OPTS', '')
+
+sys.stderr.write('Using JVM_FLAGS: {}\n'.format(jvm_flags))
 
 # Start ZooKeeper
 os.execl('bin/zkServer.sh', 'zookeeper', 'start-foreground')

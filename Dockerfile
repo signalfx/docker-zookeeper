@@ -7,7 +7,6 @@ MAINTAINER Maxime Petazzoni <max@signalfuse.com>
 RUN wget -q -O - http://mirrors.sonic.net/apache/zookeeper/zookeeper-3.4.5/zookeeper-3.4.5.tar.gz \
   | tar -C /opt -xz
 
-ADD jmxagent.jar /opt/zookeeper-3.4.5/lib/
 ADD run.py /opt/zookeeper-3.4.5/.docker/
 
 WORKDIR /opt/zookeeper-3.4.5/
