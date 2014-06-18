@@ -66,8 +66,8 @@ log4j.rootLogger=INFO,R
 
 log4j.appender.R=org.apache.log4j.RollingFileAppender
 log4j.appender.R.File=/var/log/%s/%s.log
-log4j.appender.R.maxFileSize=100MB
-log4j.appender.R.maxBackupIndex=10
+log4j.appender.R.MaxFileSize=100MB
+log4j.appender.R.MaxBackupIndex=10
 log4j.appender.R.layout=org.apache.log4j.PatternLayout
 log4j.appender.R.layout.ConversionPattern=%s
 """ % (get_service_name(), get_container_name(), LOG_PATTERN))
