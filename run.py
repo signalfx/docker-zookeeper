@@ -23,6 +23,8 @@ ZOOKEEPER_CONFIG_FILE = os.path.join('conf', 'zoo.cfg')
 ZOOKEEPER_LOG_CONFIG_FILE = os.path.join('conf', 'log4j.properties')
 ZOOKEEPER_DATA_DIR = '/var/lib/zookeeper'
 ZOOKEEPER_NODE_ID = None
+MAX_SNAPSHOT_RETAIN_COUNT = int(os.environ.get('MAX_SNAPSHOT_RETAIN_COUNT', 10))
+PURGE_INTERVAL = int(os.environ.get('PURGE_INTERVAL', 24))
 
 LOG_PATTERN = (
     "%d{yyyy'-'MM'-'dd'T'HH:mm:ss.SSSXXX} %-5p [%-35.35t] [%-36.36c]: %m%n")
@@ -45,6 +47,8 @@ conf = {
     'syncLimit': 5,
     'dataDir': ZOOKEEPER_DATA_DIR,
     'clientPort': get_port('client', 2181),
+    'autopurge.snapRetainCount': MAX_SNAPSHOT_RETAIN_COUNT,
+    'autopurge.purgeInterval': PURGE_INTERVAL,
 }
 
 # Add the ZooKeeper node list with peer and leader election ports.
