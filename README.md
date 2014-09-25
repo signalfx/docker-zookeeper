@@ -51,7 +51,7 @@ Usage
 To build a new image, simply run from this directory:
 
 ```
-$ docker build -t `whoami`/zookeeper:3.4.5 .
+$ docker build -t `whoami`/zookeeper:3.4.6 .
 ```
 
 The Docker image will be built and now available for Docker to start a new
@@ -59,5 +59,5 @@ container from:
 
 ```
 $ docker images | grep zookeeper
-mpetazzoni/zookeeper   3.4.5              294bef30310b        2 days ago          12.29 kB (virtual 856.7 MB)
+mpetazzoni/zookeeper   3.4.6              294bef30310b        2 days ago          12.29 kB (virtual 856.7 MB)
 ```
