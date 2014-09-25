@@ -9,11 +9,13 @@
 from __future__ import print_function
 
 import os
+import sys
 
 from maestro.guestutils import (
     get_container_name, get_node_list, get_service_name, get_port,
     get_specific_host, get_specific_port, get_container_host_address,
     get_environment_name)
+
 
 os.chdir(os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
@@ -23,22 +25,9 @@ ZOOKEEPER_CONFIG_FILE = os.path.join('conf', 'zoo.cfg')
 ZOOKEEPER_LOG_CONFIG_FILE = os.path.join('conf', 'log4j.properties')
 ZOOKEEPER_DATA_DIR = '/var/lib/zookeeper'
 ZOOKEEPER_NODE_ID = None
-MAX_SNAPSHOT_RETAIN_COUNT = int(os.environ.get('MAX_SNAPSHOT_RETAIN_COUNT', 10))
-PURGE_INTERVAL = int(os.environ.get('PURGE_INTERVAL', 24))
 
 LOG_PATTERN = (
     "%d{yyyy'-'MM'-'dd'T'HH:mm:ss.SSSXXX} %-5p [%-35.35t] [%-36.36c]: %m%n")
-
-# First, gather ZooKeeper nodes from the environment.
-ZOOKEEPER_NODE_LIST = get_node_list(get_service_name(),
-                                    ports=['peer', 'leader_election'])
-
-# Build a representation of ourselves, to match against the node list.
-myself = '{}:{}:{}'.format(
-    get_specific_host(get_service_name(), get_container_name()),
-    get_specific_port(get_service_name(), get_container_name(), 'peer'),
-    get_specific_port(get_service_name(), get_container_name(),
-                      'leader_election'))
 
 # Build the ZooKeeper node configuration.
 conf = {
@@ -47,16 +36,56 @@ conf = {
     'syncLimit': 5,
     'dataDir': ZOOKEEPER_DATA_DIR,
     'clientPort': get_port('client', 2181),
-    'autopurge.snapRetainCount': MAX_SNAPSHOT_RETAIN_COUNT,
-    'autopurge.purgeInterval': PURGE_INTERVAL,
+    'autopurge.snapRetainCount':
+        int(os.environ.get('MAX_SNAPSHOT_RETAIN_COUNT', 10)),
+    'autopurge.purgeInterval':
+        int(os.environ.get('PURGE_INTERVAL', 24)),
 }
 
-# Add the ZooKeeper node list with peer and leader election ports.
-for id, node in enumerate(ZOOKEEPER_NODE_LIST, 1):
-    conf['server.{}'.format(id)] = node
-    # Make a note of our node ID if we find ourselves in the list.
-    if node == myself:
-        ZOOKEEPER_NODE_ID = id
+
+def build_node_repr(name):
+    """Build the representation of a node with peer and leader-election
+    ports."""
+    return '{}:{}:{}'.format(
+        get_specific_host(get_service_name(), name),
+        get_specific_port(get_service_name(), name, 'peer'),
+        get_specific_port(get_service_name(), name, 'leader_election'))
+
+
+# Add the ZooKeeper node list with peer and leader election ports and figure
+# out our own ID. ZOOKEEPER_SERVER_IDS contains a comma-separated list of
+# node:id tuples describing the server ID of each node in the cluster, by its
+# container name. If not specified, we assume single-node mode.
+if os.environ.get('ZOOKEEPER_SERVER_IDS'):
+    servers = os.environ['ZOOKEEPER_SERVER_IDS'].split(',')
+    for server in servers:
+        node, id = server.split(':')
+        conf['server.{}'.format(id)] = build_node_repr(node)
+        if node == get_container_name():
+            ZOOKEEPER_NODE_ID = id
+
+# Verify that the number of declared nodes matches the size of the cluster.
+ZOOKEEPER_NODE_COUNT = len(get_node_list(get_service_name()))
+ZOOKEEPER_CLUSTER_SIZE = len(
+    [i for i in conf.keys() if i.startswith('server.')])
+
+# If no ZOOKEEPER_SERVER_IDS is defined, we expect to be in single-node mode so
+# no more than one node can be declared in the cluster.
+if ZOOKEEPER_CLUSTER_SIZE == 0 and ZOOKEEPER_NODE_COUNT != 1:
+    sys.stderr.write(('Missing ZOOKEEPER_SERVER_IDS declaration for ' +
+                      '{}-node ZooKeeper cluster!\n')
+                     .format(ZOOKEEPER_NODE_COUNT))
+    sys.exit(1)
+
+# If we got nodes from ZOOKEEPER_SERVER_IDS, we expect exactly the same number
+# of nodes declared in the cluster.
+if ZOOKEEPER_CLUSTER_SIZE > 0 and \
+        ZOOKEEPER_CLUSTER_SIZE != ZOOKEEPER_NODE_COUNT:
+    sys.stderr.write(('Mismatched number of nodes between ' +
+                      'ZOOKEEPER_SERVER_IDS ({}) and the declared ' +
+                      'cluster ({})!\n')
+                     .format(ZOOKEEPER_CLUSTER_SIZE), ZOOKEEPER_NODE_COUNT)
+    sys.exit(1)
 
 # Write out the ZooKeeper configuration file.
 with open(ZOOKEEPER_CONFIG_FILE, 'w+') as f:
@@ -76,20 +105,19 @@ log4j.appender.R.layout=org.apache.log4j.PatternLayout
 log4j.appender.R.layout.ConversionPattern=%s
 """ % (get_service_name(), get_container_name(), LOG_PATTERN))
 
-# Write out the 'myid' file in the data directory if we found ourselves in the
-# node list.
+# Write out the 'myid' file in the data directory if in cluster mode.
 if ZOOKEEPER_NODE_ID:
     if not os.path.exists(ZOOKEEPER_DATA_DIR):
         os.makedirs(ZOOKEEPER_DATA_DIR, mode=0750)
     with open(os.path.join(ZOOKEEPER_DATA_DIR, 'myid'), 'w+') as f:
         f.write('%s\n' % ZOOKEEPER_NODE_ID)
-    print('Starting {}, node {} of a {}-node ZooKeeper cluster...'.format(
-        get_container_name(),
-        ZOOKEEPER_NODE_ID,
-        len(ZOOKEEPER_NODE_LIST)))
+    sys.stderr.write(
+        'Starting {}, node id#{} of a {}-node ZooKeeper cluster...\n'
+        .format(get_container_name(), ZOOKEEPER_NODE_ID,
+                ZOOKEEPER_CLUSTER_SIZE))
 else:
-    print('Starting {} as a single-node ZooKeeper cluster...'.format(
-        get_container_name()))
+    sys.stderr.write('Starting {} as a single-node ZooKeeper cluster...\n'
+                     .format(get_container_name()))
 
 jvmflags = [
     '-server',
