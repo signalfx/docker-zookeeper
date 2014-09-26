@@ -36,6 +36,7 @@ conf = {
     'syncLimit': 5,
     'dataDir': ZOOKEEPER_DATA_DIR,
     'clientPort': get_port('client', 2181),
+    'quorumListenOnAllIPs': True,
     'autopurge.snapRetainCount':
         int(os.environ.get('MAX_SNAPSHOT_RETAIN_COUNT', 10)),
     'autopurge.purgeInterval':
