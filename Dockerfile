@@ -1,7 +1,7 @@
 # Dockerfile for ZooKeeper
 
-FROM quay.io/signalfuse/maestro-base:14.04-0.1.8.1
-MAINTAINER Maxime Petazzoni <max@signalfuse.com>
+FROM quay.io/signalfuse/maestro-base:15.04-0.2.6
+MAINTAINER Maxime Petazzoni <max@signalfx.com>
 
 # Get latest stable release of ZooKeeper
 RUN wget -q -O - http://mirrors.sonic.net/apache/zookeeper/zookeeper-3.4.6/zookeeper-3.4.6.tar.gz \
