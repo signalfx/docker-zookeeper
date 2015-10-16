@@ -138,7 +138,7 @@ if jmx_port != -1:
         '-Dcom.sun.management.jmxremote.ssl=false',
     ]
 
-os.environ['JVMFLAGS'] = ' '.join(jvmflags) + os.environ.get('JVM_OPTS', '')
+os.environ['JVMFLAGS'] = ' '.join(jvmflags) + ' ' + os.environ.get('JVM_OPTS', '')
 
 # Start ZooKeeper
 os.execl('bin/zkServer.sh', 'zookeeper', 'start-foreground')
