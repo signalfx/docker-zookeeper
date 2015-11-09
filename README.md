@@ -35,7 +35,7 @@ seed the service's configuration:
     snapshot purges. Defaults to 24 (daily).
 
 If you plan to run a cluster of nodes, you also need to pass in the
-ZOOKEEPER_SERVER_IDS` environment variable containing a comma-separated
+`ZOOKEEPER_SERVER_IDS` environment variable containing a comma-separated
 list of cluster nodes descriptors, as tuples of `node:id`. The `node`
 part being the container name of a node, from which its coordinates can
 be found.
