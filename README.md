@@ -47,6 +47,7 @@ set of environment variables:
 SERVICE_NAME=zookeeper
 CONTAINER_NAME=zk-node-{0,1,2}
 ZOOKEEPER_SERVER_IDS=zk-node-0:1,zk-node-1:2,zk-node-2:3
+ZOOKEEPER_INSTANCES=zk-node-0,zk-node-1,zk-node-2
 ZOOKEEPER_ZK_NODE_0_HOST=host1
 ZOOKEEPER_ZK_NODE_0_CLIENT_PORT=2181
 ZOOKEEPER_ZK_NODE_0_PEER_PORT=2888
