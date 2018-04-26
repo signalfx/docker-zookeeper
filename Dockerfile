@@ -4,10 +4,10 @@ FROM quay.io/signalfuse/maestro-base:alp-3.2-jdk8
 MAINTAINER Maxime Petazzoni <max@signalfx.com>
 
 # Get latest stable release of ZooKeeper
-RUN wget -q -O - http://mirrors.sonic.net/apache/zookeeper/zookeeper-3.4.6/zookeeper-3.4.6.tar.gz \
+RUN wget -q -O - http://apache.claz.org/zookeeper/zookeeper-3.4.12/zookeeper-3.4.12.tar.gz \
   | tar -C /opt -xz
 
-ADD run.py /opt/zookeeper-3.4.6/.docker/
+ADD run.py /opt/zookeeper-3.4.12/.docker/
 
-WORKDIR /opt/zookeeper-3.4.6/
-CMD ["python", "/opt/zookeeper-3.4.6/.docker/run.py"]
+WORKDIR /opt/zookeeper-3.4.12/
+CMD ["python", "/opt/zookeeper-3.4.12/.docker/run.py"]
