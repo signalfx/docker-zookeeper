@@ -41,6 +41,8 @@ conf = {
         int(os.environ.get('MAX_SNAPSHOT_RETAIN_COUNT', 10)),
     'autopurge.purgeInterval':
         int(os.environ.get('PURGE_INTERVAL', 24)),
+    'maxClientCnxns':
+        int(os.environ.get('MAX_CLIENT_CONNECTIONS', 60)),
 }
 
 
