@@ -1,6 +1,6 @@
 # Dockerfile for ZooKeeper
 
-FROM quay.io/signalfuse/maestro-base:alp-3.4-jdk8
+FROM quay.io/signalfuse/maestro-base:alp-3.8-jdk8
 MAINTAINER Maxime Petazzoni <max@signalfx.com>
 
 # Get latest stable release of ZooKeeper
