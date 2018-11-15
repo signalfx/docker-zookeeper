@@ -1,6 +1,6 @@
 # Dockerfile for ZooKeeper
 
-FROM quay.io/signalfuse/kubefx-base:alp-3.7-jdk8
+FROM quay.io/signalfuse/signalfx-base:alp-3.8-jdk8
 
 LABEL \
   maintainer="Jina Jain <jina@signalfx.com>" \
