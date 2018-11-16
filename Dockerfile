@@ -8,6 +8,8 @@ RUN wget -q -O - https://www.apache.org/dist/zookeeper/zookeeper-3.4.13/zookeepe
   | tar -C /opt -xz
 
 ADD run.py /opt/zookeeper-3.4.13/.docker/
+ADD entrypoint.sh /opt/zookeeper-3.4.13/.docker/
 
 WORKDIR /opt/zookeeper-3.4.13/
+ENTRYPOINT [".docker/entrypoint.sh"]
 CMD ["python", "/opt/zookeeper-3.4.13/.docker/run.py"]
