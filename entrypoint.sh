@@ -22,5 +22,5 @@ else
         chown -R maestro:maestro /var/log/zookeeper/
     fi
 
-    su-exec maestro:maestro "$@"
+    exec su-exec maestro:maestro "$@"
 fi
