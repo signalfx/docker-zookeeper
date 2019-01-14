@@ -34,8 +34,10 @@ conf = {
     'tickTime': 2000,
     'initLimit': 10,
     'syncLimit': 5,
+    '4lw.commands.whitelist': '*',
+    'admin.enableServer': 'false',
+    'reconfigEnabled': 'false',
     'dataDir': ZOOKEEPER_DATA_DIR,
-    'clientPort': get_port('client', 2181),
     'quorumListenOnAllIPs': True,
     'autopurge.snapRetainCount':
         int(os.environ.get('MAX_SNAPSHOT_RETAIN_COUNT', 10)),
@@ -49,10 +51,12 @@ conf = {
 def build_node_repr(name):
     """Build the representation of a node with peer and leader-election
     ports."""
-    return '{}:{}:{}'.format(
+    return '{}:{}:{}:participant;{}'.format(
         get_specific_host(get_service_name(), name),
         get_specific_port(get_service_name(), name, 'peer'),
-        get_specific_port(get_service_name(), name, 'leader_election'))
+        get_specific_port(get_service_name(), name, 'leader_election'),
+        get_specific_port(get_service_name(), name, 'client'),
+    )
 
 
 # Add the ZooKeeper node list with peer and leader election ports and figure
