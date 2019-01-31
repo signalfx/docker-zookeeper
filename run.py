@@ -33,10 +33,12 @@ def get_zk_node_count():
 def build_node_repr(name):
     """Build the representation of a node with peer and leader-election
     ports."""
-    return '{}:{}:{}'.format(
+    return '{}:{}:{}:participant;{}'.format(
         get_specific_host(get_service_name(), name),
         get_specific_port(get_service_name(), name, 'peer'),
-        get_specific_port(get_service_name(), name, 'leader_election'))
+        get_specific_port(get_service_name(), name, 'leader_election'),
+        get_specific_port(get_service_name(), name, 'client'),
+    )
 
 def write_zk_config():
     """Build and write the ZooKeeper node configuration."""
@@ -44,6 +46,9 @@ def write_zk_config():
         'tickTime': int(os.environ.get('ZK_TICK_TIME', 2000)),
         'initLimit': int(os.environ.get('ZK_INIT_TIME', 10)),
         'syncLimit': int(os.environ.get('ZK_SYNC_LIMIT', 5)),
+        '4lw.commands.whitelist': '*',
+        'admin.enableServer': 'false',
+        'reconfigEnabled': 'false',
         'dataDir': ZOOKEEPER_DATA_DIR,
         'clientPort': get_port('client', 2181),
         'quorumListenOnAllIPs': True,

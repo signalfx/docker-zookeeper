@@ -6,10 +6,10 @@ LABEL \
   maintainer="Jina Jain <jina@signalfx.com>" \
 
 # Get latest stable release of ZooKeeper
-RUN wget -q -O - http://apache.claz.org/zookeeper/zookeeper-3.4.13/zookeeper-3.4.13.tar.gz \
+RUN wget -q -O - http://apache.claz.org/zookeeper/zookeeper-3.5.4-beta/zookeeper-3.5.4-beta.tar.gz \
   | tar -C /opt -xz
 
-ADD run.py /opt/zookeeper-3.4.13/.docker/
-ADD zkOk.sh /opt/zookeeper-3.4.13/
-WORKDIR /opt/zookeeper-3.4.13/
-CMD ["python", "/opt/zookeeper-3.4.13/.docker/run.py"]
+ADD run.py /opt/zookeeper-3.5.4-beta/.docker/
+ADD zkOk.sh /opt/zookeeper-3.5.4-beta/
+WORKDIR /opt/zookeeper-3.5.4-beta/
+CMD ["python", "/opt/zookeeper-3.5.4-beta/.docker/run.py"]
