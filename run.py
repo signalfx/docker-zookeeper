@@ -7,6 +7,7 @@ from __future__ import print_function
 import pprint
 import os
 import re
+import sys
 
 from signalfx_orchestration_utils import *
 

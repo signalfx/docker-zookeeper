@@ -1,9 +1,4 @@
 #!/bin/bash
 set -e
 
-docker build -t quay.io/signalfuse/zookeeper:3.4.13-k8s .
-
-docker build \
-  -f zk-client/Dockerfile.client \
-  -t quay.io/signalfuse/zk-client:v1-k8s \
-  zk-client
+docker build -t quay.io/signalfuse/zookeeper:3.5.4-beta-k8s .
