@@ -1,4 +1,5 @@
 #!/bin/bash
 set -e
 
+chmod +x entrypoint.sh
 docker build -t quay.io/signalfuse/zookeeper:3.5.4-beta-k8s .
