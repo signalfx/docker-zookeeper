@@ -42,7 +42,7 @@ conf = {
     'syncLimit': int(os.environ.get('ZK_SYNC_LIMIT', 5)),
     '4lw.commands.whitelist': '*',
     'admin.enableServer': 'false',
-    'reconfigEnabled': 'false',
+    'reconfigEnabled': os.environ.get('RECONFIG_ENABLED', "false"),
     'dataDir': ZOOKEEPER_DATA_DIR,
     'quorumListenOnAllIPs': True,
     'autopurge.snapRetainCount':
