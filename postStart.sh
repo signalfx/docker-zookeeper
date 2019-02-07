@@ -9,5 +9,5 @@ ZK_SERVER_ONE_FQDN=$(echo config | nc localhost 2181 | grep server.1 | cut -d"="
 if [ -z "$ZK_SERVER_ONE_FQDN" ]; then
   exit 0
 else
-  echo "reconfig -add $MY_ID=$MY_FQDN:2888:3888:participant;0.0.0.0:2181" | nc $ZK_SERVER_ONE_FQDN 2181
+  /opt/zookeeper-3.5.4-beta/bin/zkCli.sh -server $ZK_SERVER_ONE_FQDN:2181 reconfig -add $MY_ID=$MY_FQDN:2888:3888:participant\;0.0.0.0:2181
 fi
