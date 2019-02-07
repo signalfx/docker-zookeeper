@@ -10,6 +10,8 @@ RUN wget -q -O - https://www.apache.org/dist/zookeeper/zookeeper-3.5.4-beta/zook
 ADD run.py /opt/zookeeper-3.5.4-beta/.docker/
 ADD entrypoint.sh /opt/zookeeper-3.5.4-beta/.docker/
 ADD zkOk.sh /opt/zookeeper-3.5.4-beta/
+ADD preStop.sh /opt/zookeeper-3.5.4-beta/
+ADD postStart.sh /opt/zookeeper-3.5.4-beta/
 
 WORKDIR /opt/zookeeper-3.5.4-beta/
 ENTRYPOINT [".docker/entrypoint.sh"]
