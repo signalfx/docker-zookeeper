@@ -43,7 +43,7 @@ conf = {
     '4lw.commands.whitelist': '*',
     'admin.enableServer': 'false',
     'reconfigEnabled': os.environ.get('RECONFIG_ENABLED', "false"),
-    'skipACL': os.environ.get('SKIP_ACL', "false"),
+    'skipACL': os.environ.get('SKIP_ACL', "no"),
     'dataDir': ZOOKEEPER_DATA_DIR,
     'quorumListenOnAllIPs': True,
     'autopurge.snapRetainCount':
