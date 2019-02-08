@@ -5,8 +5,6 @@
 
 ID=$((${POD_NAME##*-}+1))
 ZK_SERVER_ONE_FQDN=$(echo config | nc localhost 2181 | grep server.1 | cut -d"=" -f2 | cut -d":" -f1)
-if [ -z "$ZK_SERVER_ONE_FQDN" ]; then
-  exit 0
-else
+if [ "$ZK_SERVER_ONE_FQDN" ]; then
 	/opt/zookeeper-3.5.4-beta/bin/zkCli.sh -server $ZK_SERVER_ONE_FQDN:2181 reconfig -remove $ID
 fi
