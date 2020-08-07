@@ -29,6 +29,9 @@ ZOOKEEPER_NODE_ID = None
 LOG_PATTERN = (
     "%d{yyyy'-'MM'-'dd'T'HH:mm:ss.SSSXXX} %-5p [%-35.35t] [%-36.36c]: %m%n")
 
+RMI_ENABLED = os.environ.get('RMI_ENABLED', 'true')
+RMI_LOCAL_HOST = os.environ.get('RMI_LOCAL_HOST', 'true')
+
 # Build the ZooKeeper node configuration.
 conf = {
     'tickTime': 2000,
@@ -138,11 +141,22 @@ if jmx_port != -1:
     jvmflags += [
         '-Djava.rmi.server.hostname={}'.format(get_container_host_address()),
         '-Dcom.sun.management.jmxremote.port={}'.format(jmx_port),
-        '-Dcom.sun.management.jmxremote.rmi.port={}'.format(jmx_port),
         '-Dcom.sun.management.jmxremote.authenticate=false',
         '-Dcom.sun.management.jmxremote.local.only=false',
         '-Dcom.sun.management.jmxremote.ssl=false',
     ]
+    if RMI_ENABLED.lower() == 'true':
+        rmi_port = get_port('rmi', jmx_port)
+        if RMI_LOCAL_HOST.lower() == 'true':
+            rmi_server = 'localhost'
+        else:
+            rmi_server = get_container_host_address()
+        if rmi_port != -1:
+            jvmflags += [
+                '-Djava.rmi.server.hostname={}'.format(rmi_server),
+                '-Dcom.sun.management.jmxremote.rmi.port={}'.format(rmi_port),
+            ]
+
 
 os.environ['JVMFLAGS'] = ' '.join(jvmflags) + ' ' + os.environ.get('JVM_OPTS', '')
 
