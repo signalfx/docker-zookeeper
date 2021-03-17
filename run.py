@@ -42,6 +42,7 @@ conf = {
     'reconfigEnabled': 'false',
     'dataDir': ZOOKEEPER_DATA_DIR,
     'quorumListenOnAllIPs': True,
+    'clientPort': get_port('client'),
     'autopurge.snapRetainCount':
         int(os.environ.get('MAX_SNAPSHOT_RETAIN_COUNT', 10)),
     'autopurge.purgeInterval':
