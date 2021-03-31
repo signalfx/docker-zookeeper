@@ -9,6 +9,9 @@ RUN wget -q -O - https://archive.apache.org/dist/zookeeper/zookeeper-3.5.9/apach
 
 ADD run.py /opt/apache-zookeeper-3.5.9-bin/.docker/
 ADD entrypoint.sh /opt/apache-zookeeper-3.5.9-bin/.docker/
+ADD zkOk.sh /opt/apache-zookeeper-3.5.9-bin/
+ADD preStop.sh /opt/apache-zookeeper-3.5.9-bin/
+ADD postStart.sh /opt/apache-zookeeper-3.5.9-bin/
 
 # That's unused, since we don't enable admin server. Removing to prevent
 # CVE-2020-27223 from showing up in security scans.
