@@ -49,6 +49,8 @@ conf = {
         int(os.environ.get('PURGE_INTERVAL', 24)),
     'maxClientCnxns':
         int(os.environ.get('MAX_CLIENT_CONNECTIONS', 60)),
+    'globalOutstandingLimit':
+        int(os.environ.get('GLOBAL_OUTSTANDING_LIMIT', 1000)),
 }
 
 
