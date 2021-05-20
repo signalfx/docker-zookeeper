@@ -149,6 +149,8 @@ else:
 jvmflags = [
     '-server',
     '-showversion',
+    '-Dznode.container.checkIntervalMs={}'.format(int(os.environ.get('CONTAINER_MANAGER_CHECK_INTERVAL_MS', 60000))),
+    '-Dznode.container.maxPerMinute={}'.format(int(os.environ.get('CONTAINER_MANAGER_MAX_PER_MIN', 10000))),
     '-Dvisualvm.display.name="{}/{}"'.format(
         get_environment_name(), CONTAINER_NAME),
 ]
