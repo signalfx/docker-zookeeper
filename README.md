@@ -21,7 +21,7 @@ seed the service's configuration:
     which will be used for looking up links and ports informations from the
     other environment variables. For this, the name is uppercased and
     non-alphanumeric characters are replaced by underscores.
-  - `<SERVICE_NAME>_<CONTAINER_NAME>_CLIENT_PORT`, which controls the
+  - `<SERVICE_NAME>_<CONTAINER_NAME>_CLIENT_INTERNAL_PORT`, which controls the
     `clientPort` configuration setting. Defaults to 2181;
   - `<SERVICE_NAME>_<CONTAINER_NAME>_PEER_PORT`, which is used as the
     peer port specified in the server list for this node (and the
