@@ -61,7 +61,7 @@ def build_node_repr(name):
         get_specific_host(DISCOVERY_SERVICE_NAME, name),
         get_specific_port(DISCOVERY_SERVICE_NAME, name, 'peer'),
         get_specific_port(DISCOVERY_SERVICE_NAME, name, 'leader_election') or get_specific_port(DISCOVERY_SERVICE_NAME, name, 'election'),
-        get_specific_port(DISCOVERY_SERVICE_NAME, name, 'client'),
+        get_specific_port(DISCOVERY_SERVICE_NAME, name, 'client', 2181),
     )
 
 
