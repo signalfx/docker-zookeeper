@@ -77,8 +77,16 @@ if os.environ.get('ZOOKEEPER_SERVER_IDS'):
         if node == CONTAINER_NAME:
             ZOOKEEPER_NODE_ID = server_id
 
+ZOOKEEPER_ADDITIONAL_NODE_COUNT = 0
+if os.environ.get('ZOOKEEPER_ADDITIONAL_SERVERS'):
+    servers = os.environ['ZOOKEEPER_ADDITIONAL_SERVERS'].split(',')
+    ZOOKEEPER_ADDITIONAL_NODE_COUNT = len(servers)
+    for server in servers:
+        server_id, node_repr = server.split('=')
+        conf[server_id] = node_repr
+
 # Verify that the number of declared nodes matches the size of the cluster.
-ZOOKEEPER_NODE_COUNT = os.environ.get('ZK_REPLICAS') or len(get_node_list(DISCOVERY_SERVICE_NAME))
+ZOOKEEPER_NODE_COUNT = os.environ.get('ZK_REPLICAS') or (len(get_node_list(DISCOVERY_SERVICE_NAME)) + ZOOKEEPER_ADDITIONAL_NODE_COUNT)
 ZOOKEEPER_NODE_COUNT = int(ZOOKEEPER_NODE_COUNT)
 ZOOKEEPER_CLUSTER_SIZE = len(
     [i for i in conf.keys() if i.startswith('server.')])
