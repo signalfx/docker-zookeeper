@@ -20,10 +20,11 @@ os.chdir(os.path.join(
     '..'))
 
 CONTAINER_NAME = get_container_name()
-ZOOKEEPER_CONFIG_FILE = os.path.join('conf', 'zoo.cfg')
+ZOOCFGDIR = os.environ.get('ZOOCFGDIR', 'conf')
+ZOOKEEPER_CONFIG_FILE = os.path.join(ZOOCFGDIR, 'zoo.cfg')
+ZOOKEEPER_DYNAMIC_CONFIG_FILE = os.path.join(ZOOCFGDIR, 'zoo.cfg.dynamic')
+ZOOKEEPER_LOG_CONFIG_FILE = os.path.join(ZOOCFGDIR, 'log4j.properties')
 RECONFIG_ENABLED = (os.environ.get('RECONFIG_ENABLED', "").lower() == 'true')
-ZOOKEEPER_DYNAMIC_CONFIG_FILE = os.environ.get('ZOOKEEPER_DYNAMIC_CONFIG_FILE')
-ZOOKEEPER_LOG_CONFIG_FILE = os.path.join('conf', 'log4j.properties')
 ZOOKEEPER_DATA_DIR = os.environ.get('ZK_DATA_DIR', '/var/lib/zookeeper')
 ZOOKEEPER_NODE_ID = None
 SERVICE_NAME = get_service_name()
@@ -70,16 +71,8 @@ def build_node_repr(name):
 
     if (not peer) or (not election) or (not client):
         print('Failed to build node representation: %s' % node_repr)
-        system.exit(1)
+        sys.exit(1)
     return node_repr
-
-
-if RECONFIG_ENABLED and not ZOOKEEPER_DYNAMIC_CONFIG_FILE:
-    print(
-        'You need to specify value for ZOOKEEPER_DYNAMIC_CONFIG_FILE '
-        'if you set RECONFIG_ENABLED to true.'
-    )
-    sys.exit(1)
 
 
 # Add the ZooKeeper node list with peer and leader election ports and figure
@@ -126,16 +119,30 @@ if ZOOKEEPER_CLUSTER_SIZE > 0 and \
           .format(ZOOKEEPER_CLUSTER_SIZE), ZOOKEEPER_NODE_COUNT)
     sys.exit(1)
 
-# Write out the ZooKeeper configuration file.
+# Write out the ZooKeeper configuration files.
 static_conf = conf.copy()
 if RECONFIG_ENABLED:
-    static_conf['dynamicConfigFile'] = ZOOKEEPER_DYNAMIC_CONFIG_FILE
-    if os.path.exists(ZOOKEEPER_DYNAMIC_CONFIG_FILE):
+    # ZK creates new dynamic config file every time reconfiguration happens.
+    # We need to find out which one was used most recently.
+    cur_dynamic_config = None
+    if os.path.exists(ZOOKEEPER_CONFIG_FILE):
+        with open(ZOOKEEPER_CONFIG_FILE, 'r') as f:
+            for l in f.readlines():
+                k, v = l.strip().split("=")
+                if k == 'dynamicConfigFile':
+                    cur_dynamic_config = v
+                    break
+    static_conf['dynamicConfigFile'] = cur_dynamic_config or ZOOKEEPER_DYNAMIC_CONFIG_FILE
+
+    if cur_dynamic_config:
+        print('Using pre-existent dynamic config file %s.' % cur_dynamic_config)
+    elif os.path.exists(ZOOKEEPER_DYNAMIC_CONFIG_FILE):
         print('Dynamic config file already exists at %s.' % ZOOKEEPER_DYNAMIC_CONFIG_FILE)
     else:
         with open(ZOOKEEPER_DYNAMIC_CONFIG_FILE, 'w+') as f:
             for entry in sorted(dynamic_conf.iteritems()):
                 f.write("%s=%s\n" % entry)
+        print('Written new dynamic config file at %s.' % ZOOKEEPER_DYNAMIC_CONFIG_FILE)
 else:
     static_conf.update(dynamic_conf)
 with open(ZOOKEEPER_CONFIG_FILE, 'w+') as f:
