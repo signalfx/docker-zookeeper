@@ -11,7 +11,9 @@ from __future__ import print_function
 import os
 import sys
 
-from signalfx_orchestration_utils import *
+from signalfx_orchestration_utils import get_container_name, \
+    get_service_name, get_port, get_specific_host, get_specific_port, \
+    get_environment_name, get_node_list, get_container_host_address
 
 os.chdir(os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
@@ -19,6 +21,8 @@ os.chdir(os.path.join(
 
 CONTAINER_NAME = get_container_name()
 ZOOKEEPER_CONFIG_FILE = os.path.join('conf', 'zoo.cfg')
+RECONFIG_ENABLED = (os.environ.get('RECONFIG_ENABLED', "").lower() == 'true')
+ZOOKEEPER_DYNAMIC_CONFIG_FILE = os.environ.get('ZOOKEEPER_DYNAMIC_CONFIG_FILE')
 ZOOKEEPER_LOG_CONFIG_FILE = os.path.join('conf', 'log4j.properties')
 ZOOKEEPER_DATA_DIR = os.environ.get('ZK_DATA_DIR', '/var/lib/zookeeper')
 ZOOKEEPER_NODE_ID = None
@@ -39,7 +43,7 @@ conf = {
     'syncLimit': 5,
     '4lw.commands.whitelist': '*',
     'admin.enableServer': 'false',
-    'reconfigEnabled': 'false',
+    'reconfigEnabled': 'true' if RECONFIG_ENABLED else 'false',
     'dataDir': ZOOKEEPER_DATA_DIR,
     'quorumListenOnAllIPs': True,
     'clientPort': get_port('client', 2181),
@@ -52,6 +56,7 @@ conf = {
     'globalOutstandingLimit':
         int(os.environ.get('GLOBAL_OUTSTANDING_LIMIT', 1000)),
 }
+dynamic_conf = {}
 
 
 def build_node_repr(name):
@@ -65,6 +70,14 @@ def build_node_repr(name):
     )
 
 
+if RECONFIG_ENABLED and not ZOOKEEPER_DYNAMIC_CONFIG_FILE:
+    print(
+        'You need to specify value for ZOOKEEPER_DYNAMIC_CONFIG_FILE '
+        'if you set RECONFIG_ENABLED to true.'
+    )
+    sys.exit(1)
+
+
 # Add the ZooKeeper node list with peer and leader election ports and figure
 # out our own ID. ZOOKEEPER_SERVER_IDS contains a comma-separated list of
 # node:id tuples describing the server ID of each node in the cluster, by its
@@ -73,7 +86,7 @@ if os.environ.get('ZOOKEEPER_SERVER_IDS'):
     servers = os.environ['ZOOKEEPER_SERVER_IDS'].split(',')
     for server in servers:
         node, server_id = server.split(':')
-        conf['server.{}'.format(server_id)] = build_node_repr(node)
+        dynamic_conf['server.{}'.format(server_id)] = build_node_repr(node)
         if node == CONTAINER_NAME:
             ZOOKEEPER_NODE_ID = server_id
 
@@ -83,13 +96,13 @@ if os.environ.get('ZOOKEEPER_ADDITIONAL_SERVERS'):
     ZOOKEEPER_ADDITIONAL_NODE_COUNT = len(servers)
     for server in servers:
         server_id, node_repr = server.split('=')
-        conf[server_id] = node_repr
+        dynamic_conf[server_id] = node_repr
 
 # Verify that the number of declared nodes matches the size of the cluster.
 ZOOKEEPER_NODE_COUNT = os.environ.get('ZK_REPLICAS') or (len(get_node_list(DISCOVERY_SERVICE_NAME)) + ZOOKEEPER_ADDITIONAL_NODE_COUNT)
 ZOOKEEPER_NODE_COUNT = int(ZOOKEEPER_NODE_COUNT)
 ZOOKEEPER_CLUSTER_SIZE = len(
-    [i for i in conf.keys() if i.startswith('server.')])
+    [i for i in dynamic_conf.keys() if i.startswith('server.')])
 
 # If no ZOOKEEPER_SERVER_IDS is defined, we expect to be in single-node mode so
 # no more than one node can be declared in the cluster.
@@ -110,8 +123,19 @@ if ZOOKEEPER_CLUSTER_SIZE > 0 and \
     sys.exit(1)
 
 # Write out the ZooKeeper configuration file.
+static_conf = conf.copy()
+if RECONFIG_ENABLED:
+    static_conf['dynamicConfigFile'] = ZOOKEEPER_DYNAMIC_CONFIG_FILE
+    if os.path.exists(ZOOKEEPER_DYNAMIC_CONFIG_FILE):
+        print('Dynamic config file already exists at %s.' % ZOOKEEPER_DYNAMIC_CONFIG_FILE)
+    else:
+        with open(ZOOKEEPER_DYNAMIC_CONFIG_FILE, 'w+') as f:
+            for entry in sorted(dynamic_conf.iteritems()):
+                f.write("%s=%s\n" % entry)
+else:
+    static_conf.update(dynamic_conf)
 with open(ZOOKEEPER_CONFIG_FILE, 'w+') as f:
-    for entry in conf.iteritems():
+    for entry in sorted(static_conf.iteritems()):
         f.write("%s=%s\n" % entry)
 
 # Setup the logging configuration.
@@ -123,7 +147,7 @@ if os.environ.get('LOG_TO_STDOUT', 'false').lower() == 'true':
 log4j.appender.stdout=org.apache.log4j.ConsoleAppender
 log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
 log4j.appender.stdout.layout.ConversionPattern=%s
-""" % (LOG_PATTERN)
+""" % LOG_PATTERN
 
 elif True:
     # TODO: replace with following condition after we're fully migrated to k8s:
