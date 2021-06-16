@@ -62,12 +62,16 @@ dynamic_conf = {}
 def build_node_repr(name):
     """Build the representation of a node with peer and leader-election
     ports."""
-    return '{}:{}:{}:participant;{}'.format(
-        get_specific_host(DISCOVERY_SERVICE_NAME, name),
-        get_specific_port(DISCOVERY_SERVICE_NAME, name, 'peer'),
-        get_specific_port(DISCOVERY_SERVICE_NAME, name, 'leader_election') or get_specific_port(DISCOVERY_SERVICE_NAME, name, 'election'),
-        get_specific_port(DISCOVERY_SERVICE_NAME, name, 'client', 2181),
-    )
+    peer = get_specific_port(DISCOVERY_SERVICE_NAME, name, 'peer')
+    election = get_specific_port(DISCOVERY_SERVICE_NAME, name, 'leader_election') or get_specific_port(DISCOVERY_SERVICE_NAME, name, 'election')
+    client = get_specific_port(DISCOVERY_SERVICE_NAME, name, 'client', 2181)
+    node_repr = '{}:{}:{}:participant;{}'.format(
+        get_specific_host(DISCOVERY_SERVICE_NAME, name), peer, election, client)
+
+    if (not peer) or (not election) or (not client):
+        print('Failed to build node representation: %s' % node_repr)
+        system.exit(1)
+    return node_repr
 
 
 if RECONFIG_ENABLED and not ZOOKEEPER_DYNAMIC_CONFIG_FILE:
